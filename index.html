@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<title>Remote Duplication Management Console</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/w3.css">
+<script src="/sha.js"></script>
+<body>
+<link rel="stylesheet" href="/index.css">
+
+<div class="w3-sidebar w3-bar-block w3-collapse w3-card w3-animate-left" style="width:200px;" id="mySidebar">
+  
+<h4><a class="w3-bar-item w3-button" href="javascript:viewPage('dashboard')">Dashboard</a></h4>
+<h5>  <a class="w3-bar-item w3-button" href="javascript:viewPage('directories')">Backups</a></h5>
+<h5>  <a class="w3-bar-item w3-button" href="javascript:viewPage('schedule')">Backup Times</a></h5>
+<h5>  <a class="w3-bar-item w3-button" href="javascript:viewPage('limits')">CPU Limits</a></h5>
+
+<button class="w3-bar-item w3-button w3-large w3-hide-large w3-align-right w3-black" onclick="w3_close()">Close &times;</button>
+</div>
+<script>
+
+</script>
+<div class="w3-overlay" style="display: none" id="loader"><div class="loader"></div><br>Accessing Backups...</div>
+<div class="w3-overlay" style="display: none" id="loader3"><div class="loader"></div><br>Accessing Backups...</div>
+<div class="w3-main" style="margin-left:200px">
+
+<div class="w3-teal w3-row" style="min-width: 100vw; max-height: 15vh;">
+  <button class="w3-button w3-teal w3-xxlarge w3-hide-large" onclick="w3_open()" style="min-height: 15vh; max-width: 15vw;">&#9776;</button>
+  <div class="w3-container" style="min-height: 19vh; max-width: 80vw">
+    <img src="/logo.svg" style="right: 0px; min-height: 7vh; max-height: 15vh; min-width: 70vw; max-width: 80vw; " class='w3-large w3-display-topright'>
+  </div>
+</div>
+<div class="w3-container w3-section" id="dashboard">
+  <h3>Remote Duplication HOME</h3>
+  <p>The sidebar in this example will always be displayed on screens wider than 992px, and hidden on tablets or mobile phones (screens less than 993px wide).</p>
+  <p>On tablets and mobile phones the sidebar is replaced with a menu icon to open the sidebar.</p>
+  <p>The sidebar will overlay of the page content.</p>
+<p><b>Resize the browser window to see how it works.</b></p>
+</div>
+<div class="w3-container w3-section" id="directories">
+  <h3>View / Restore Backups</h3>
+  <div class="w3-large"><h4> Select a Date to Backup From <input type="date" name="date" id="currentDate" onChange="javascript: handle_date_changed();" /></h4>
+  <br>
+  <div id="directories_update_note" style="display: none" class="w3-panel w3-pale-yellow w3-leftbar w3-border-yellow">
+  Press the <a href="javascript:viewPage('directories'); hide_date_update_note()">Load Directories</a> button below to view the directories backed up on the selected date 
+  <br><br>
+  <a class="w3-button w3-border" href="javascript:viewPage('directories'); hide_date_update_note();">Load Directories</a>
+  </div>
+  </div>
+  
+  
+    <div id="detailsModal" class="w3-modal w3-animate-opacity" style="display: none">
+      <div class="w3-modal-content w3-card-4">
+	<header class="w3-container w3-blue"> 
+	<span onclick="document.getElementById('detailsModal').style.display='none'" 
+	class="w3-button w3-large w3-display-topright">&times;</span>
+	<h2>Details</h2>
+      </header>
+      <center><a href="javascript:socket_request('EXTRACT ' + currentDirectory)" class="w3-button w3-border w3-hover-blue w3-light-gray">Extract Archive to Backup Server</a></center>
+	<div class="w3-responsive" style="width: 100%">
+	<pre style="width:80%; height: 80%" id="detailsOutput" class=""></pre>
+	
+	
+      </div>
+	<footer class='w3-container w3-blue'>
+	
+      </footer>
+    </div>
+    
+    
+  </div>
+  <div class="w3-responsive" id="directories_main">
+    
+    <table id="id01" class='w3-table-all w3-hoverable w3-card-4 w3-normal'>
+      <tr class="w3-blue">
+      <th>Directory</th>
+      <th>Details</th>
+      </tr>
+      <tr w3-repeat="directories">
+	<td> <a href="javascript:socket_request('FILES {{directory}}');">{{directory}}</a></td>
+	<td><a href="javascript: socket_request('DETAILS {{directory}}');">Details...</td>
+      </tr>
+    </table>
+  </div>
+  <div id="viewFilesModal" class="w3-modal w3-animate-opacity">
+    <div class="w3-modal-content w3-card-4">
+      <header class="w3-container w3-teal"> 
+	<span onclick="document.getElementById('viewFilesModal').style.display='none';" 
+	class="w3-button w3-large w3-display-topright">&times;</span>
+	<h2>Files</h2>
+      </header>
+  
+
+  
+  <div class="w3-overlay" style="display: none" id="loader2"><div class="loader"></div><br>Accessing Backups...</div>
+  <div class="w3-container" id="section_view_files">
+	<div class="w3-responsive">
+	
+    <table id="viewFilesTable" class='w3-table-all w3-hoverable w3-card-4 w3-normal'>
+      <tr class="w3-blue">
+      <th>Filename</th>
+    
+      </tr>
+      <tr w3-repeat="files">
+	<td> <a href="javascript:socket_request('FILEVIEW ' + currentDirectory + ' {{file}} ');">{{file}}</a></td>
+	
+	
+      </tr>
+    </table>
+  </div>
+      </div> <!-- end of section_view_files -->
+      
+      <div class="w3-container" id="section_view_url">
+      <center><h4>Use the link below to view / download your file.</h4>
+      <div id="view_url"></div>
+      <br><br>
+      <a class="w3-button w3-border" href="javascript:return_to_files_list()">Return to Files List</a>
+      </center>
+      </div>
+      <footer class="w3-container w3-teal">
+	<p>Modal Footer</p>
+      </footer>
+    </div>
+  </div>
+  
+  <div id="viewFilesModal" class="w3-modal w3-animate-opacity">
+    <div class="w3-modal-content w3-card-4">
+      <header class="w3-container w3-teal"> 
+	<span onclick="document.getElementById('viewFilesModal').style.display='none'" 
+	class="w3-button w3-large w3-display-topright">&times;</span>
+	<h2>Files</h2>
+      </header>
+  
+
+  
+  <div class="w3-overlay" style="display: none" id="loader4"><div class="loader"></div><br>Loading</div>
+  
+	<div class="w3-responsive">
+	
+	
+	</div>
+   </div>
+</div>
+	
+<script>
+
+</script>
+
+</div>
+
+<div class="w3-container w3-section" id="schedule">
+<h3>Schedule</h3>
+<p>The sidebar in this example will always be displayed on screens wider than 992px, and hidden on tablets or mobile phones (screens less than 993px wide).</p>
+<p>On tablets and mobile phones the sidebar is replaced with a menu icon to open the sidebar.</p>
+<p>The sidebar will overlay of the page content.</p>
+<p><b>Resize the browser window to see how it works.</b></p>
+</div>
+
+<div class="w3-container w3-section" id="limits">
+<h3>CPU and Resource Limits</h3>
+<p>The sidebar in this example will always be displayed on screens wider than 992px, and hidden on tablets or mobile phones (screens less than 993px wide).</p>
+<p>On tablets and mobile phones the sidebar is replaced with a menu icon to open the sidebar.</p>
+<p>The sidebar will overlay of the page content.</p>
+<p><b>Resize the browser window to see how it works.</b></p>
+
+  <div class="w3-responsive" id="directories_main">
+    
+    <table id="limitsTable" class='w3-table-all w3-hoverable w3-card-4 w3-normal'>
+      <tr class="w3-blue">
+      <th>Avail Processors</th>
+      <th>Limit Processors</th>
+      <th>CPU Limit</th>
+      </tr>
+      <tr w3-repeat="limits">
+	<td> <a href="javascript:void(0)');">{{NumProcessors}}</a></td>
+	<td><a href="javascript:void(0)');">{{Max Processors}}</td>
+	<td><a href="javascript:void(0)');">{{CPU Limit}}</td>
+      </tr>
+    </table>
+  </div>
+
+</div>
+
+  
+</div>
+
+<script src="/index.js">
+
+</script>
+    
+</body>
+</html>
